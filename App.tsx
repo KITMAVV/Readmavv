@@ -1,28 +1,27 @@
 import React from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import Home_screen from "./src/screens/home_screen.tsx";
+// import { View, Text } from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 
-function App(): React.JSX.Element {
-  return (
-      <>
-    <View>
-        <Text style={styles.red}>
-            Hello World
-        </Text>
-    </View>
-          <Home_screen/>
-      </>
-  );
+import HomeScreen from './src/screens/home_screen.tsx';
+import BooksExplorer from './src/screens/explore_books.tsx';
+import MyCollection from './src/screens/my_collection.tsx';
+// import {StyleSheet} from 'react-native';
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+    return (
+        <NavigationContainer>
+            <Tab.Navigator>
+                <Tab.Screen name="Home" component={HomeScreen} />
+                <Tab.Screen name="BooksExplorer" component={BooksExplorer} />
+                <Tab.Screen name="MyCollection" component={MyCollection} />
+            </Tab.Navigator>
+        </NavigationContainer>
+    );
 }
 
-const styles = StyleSheet.create({
-    red:{
-        color: 'red',
-    },
-});
-
-export default App;
+// const styles = StyleSheet.create({
+//
+// });
