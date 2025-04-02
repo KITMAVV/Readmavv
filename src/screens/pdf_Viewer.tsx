@@ -1,53 +1,85 @@
 // Pdf_Viewer.js
 import React, { useState } from 'react';
-import {Button, View} from 'react-native';
+import {Button, View, StyleSheet, Dimensions} from 'react-native';
 
+import Pdf from 'react-native-pdf';
 
-
-import { pick } from '@react-native-documents/picker';
-import { viewDocument } from '@react-native-documents/viewer';
-
-
+import {keepLocalCopy, pick} from '@react-native-documents/picker';
 
 const Pdf_Viewer = () => {
 
     const [lastUri, setLastUri] = useState<string | null>(null);
 
-
     const handleError = (err: unknown) => {
         console.log('error', err);
     };
     return (
-        <View>
+        <View style={{ flex: 1 }}>
             <Button
                 title="open file"
                 onPress={async () => {
                     try {
                         const [result] = await pick({
                             mode: 'open',
+                            type: ['application/pdf'],
                         });
-                        console.log(result);
-                        setLastUri(result.uri);
+                        const [localCopy] = await keepLocalCopy({
+                            files: [
+                                {
+                                    uri: result.uri,
+                                    fileName: result.name ?? 'fallbackName',
+                                },
+                            ],
+                            destination: 'documentDirectory',
+                        });
+                        if (localCopy.status === 'success') {
+                            setLastUri(localCopy.localUri); //
+                            console.log('Local file:', localCopy.localUri);
+                        } else {
+                            console.log('Error while cop:', localCopy.copyError);
+                        }
+
                     } catch (err) {
-                        // see error handling
+                        handleError(err);
                     }
                 }}
             />
 
-            <Button
-                title="view the last imported file"
-                onPress={() => {
-                    if (!lastUri) {
-                        console.log('Файл ще не вибрано');
-                        return;
-                    }
-                    const uriToOpen = lastUri;
-                    viewDocument({ uri: uriToOpen, mimeType: 'application/pdf' }).catch(handleError);
-                }}
-            />
+            {lastUri ? (
+                <Pdf
+                    source={{ uri: lastUri }}
+                    onLoadComplete={(numberOfPages, filePath) => {
+                        console.log(`Number of pages: ${numberOfPages}`);
+                    }}
+                    onPageChanged={(page, numberOfPages) => {
+                        console.log(`Current page: ${page}`);
+                    }}
+                    onError={(error) => {
+                        console.log(error);
+                    }}
+                    onPressLink={(uri) => {
+                        console.log(`Link pressed: ${uri}`);
+                    }}
+                    style={styles.pdf}
+                />
+            ) : (
+                <View style={{ marginTop: 16 }}>
+                    <Button
+                        title="No PDF selected"
+                        onPress={() => console.log('Choose pdf')}
+                    />
+                </View>
+            )}
         </View>
     );
 };
 
 export default Pdf_Viewer;
 
+const styles = StyleSheet.create({
+    pdf: {
+        flex:1,
+        width:Dimensions.get('window').width,
+        height:Dimensions.get('window').height,
+    }
+});
