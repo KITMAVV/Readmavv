@@ -1,38 +1,193 @@
+import React, { useState } from 'react';
+import {View, Button, FlatList, StyleSheet, Text, Modal, TextInput, Alert, TouchableOpacity} from 'react-native';
+import { pick, keepLocalCopy } from '@react-native-documents/picker';
+import PdfCard from '../components/PdfCard.tsx';
 
-import React from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+type PdfItem = {
+    id: string;
+    name: string;
+    uri: string;
+    description?: string;
+};
 
-import { pick } from '@react-native-documents/picker';
+export default function MyCollection({ navigation }: any) {
+    const [pdfs, setPdfs] = useState<PdfItem[]>([]);
+    const [selectedUri, setSelectedUri] = useState<string | null>(null);
+    const [originalFileName, setOriginalFileName] = useState<string>('');
+    const [pdfName, setPdfName] = useState<string>('');
+    const [pdfDescription, setPdfDescription] = useState<string>('');
+    const [modalVisible, setModalVisible] = useState(false);
+    const handleAddPdf = async () => {
+        try {
+            const [picked] = await pick({
+                mode: 'open',
+                type: ['application/pdf'],
+            });
+            const originalName = picked.name ?? 'Unnamed PDF';
+            setOriginalFileName(originalName);
 
-export default function MyCollection() {
+
+            const [localCopy] = await keepLocalCopy({
+                files: [
+                    {
+                        uri: picked.uri,
+                        fileName: originalName,
+                    },
+                ],
+                destination: 'documentDirectory',
+            });
+
+            if (localCopy.status === 'success') {
+                setSelectedUri(localCopy.localUri);
+                setPdfName('');
+                setPdfDescription('');
+                setModalVisible(true);
+            } else {
+                console.error('Error PDF:', localCopy.copyError);
+            }
+        } catch (err) {
+            console.error('Error chos PDF:', err);
+        }
+    };
+
+
+    const handleSaveInfo = () => {
+        const finalName = pdfName.trim() === '' ? originalFileName : pdfName.trim();
+        const isDuplicate = pdfs.some(
+            (item) => item.name.trim().toLowerCase() === finalName.toLowerCase()
+        );
+
+        if (isDuplicate) {
+            Alert.alert(
+                'Duplicate',
+                `Name "${finalName}" already exist.`
+            );
+            return;
+        }
+        if (selectedUri) {
+            const newPdf: PdfItem = {
+                id: Date.now().toString(),
+                name: finalName,
+                uri: selectedUri,
+                description: pdfDescription,
+            };
+
+            setPdfs((prev) => [...prev, newPdf]);
+        }
+        setModalVisible(false);
+    };
+    const handleOpenPdf = (pdf: PdfItem) => {
+        navigation.navigate('Pdf_Viewer', {
+            pdfUri: pdf.uri,
+            pdfName: pdf.name,
+        });
+    };
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>Ur books here</Text>
-            <Button
-                title="open file"
-                onPress={async () => {
-                    try {
-                        const [result] = await pick({
-                            mode: 'open',
-                        })
-                        console.log(result)
-                    } catch (err) {
-                        // see error handling
-                    }
-                }}
+            <Button title="Add PDF" onPress={handleAddPdf} />
+
+            <FlatList
+                data={pdfs}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <PdfCard
+                        pdf={item}
+                        onPress={() => handleOpenPdf(item)}
+                    />
+                )}
             />
+            <Modal
+                animationType="slide"
+                visible={modalVisible}
+                transparent={true}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Name and Description</Text>
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder={originalFileName}
+                            value={pdfName}
+                            onChangeText={setPdfName}
+                        />
+
+                        <TextInput
+                            style={styles.input}
+                            placeholder="this file is... (optional)"
+                            value={pdfDescription}
+                            onChangeText={setPdfDescription}
+                        />
+
+                        <View style={styles.buttonRow}>
+                            <TouchableOpacity
+                                style={[styles.modalButton, styles.cancelButton]}
+                                onPress={() => setModalVisible(false)}
+                            >
+                                <Text style={styles.btnText}>Cancel</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.modalButton}
+                                onPress={handleSaveInfo}
+                            >
+                                <Text style={styles.btnText}>Save</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
 
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        padding: 16,
+    },
+    modalContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
-    title: {
-        fontSize: 24,
+    modalContent: {
+        width: '80%',
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        padding: 16,
+    },
+    modalTitle: {
+        fontSize: 17,
+        marginBottom: 12,
+        fontWeight: 'bold',
+    },
+    input: {
+        borderWidth: 1,
+        borderColor: '#999',
+        borderRadius: 6,
+        padding: 8,
+        marginVertical: 8,
+    },
+    buttonRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        marginTop: 16,
+    },
+    modalButton: {
+        backgroundColor: '#007AFF',
+        borderRadius: 6,
+        padding: 10,
+        marginLeft: 8,
+    },
+    cancelButton: {
+        backgroundColor: '#f00',
+    },
+    btnText: {
+        color: '#fff',
+        fontSize: 15,
     },
 });

@@ -1,85 +1,77 @@
-// Pdf_Viewer.js
-import React, { useState } from 'react';
-import {Button, View, StyleSheet, Dimensions} from 'react-native';
-
+import React from 'react';
+import { View, StyleSheet, Dimensions, TouchableOpacity, Text } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import Pdf from 'react-native-pdf';
 
-import {keepLocalCopy, pick} from '@react-native-documents/picker';
+export default function Pdf_Viewer() {
+    const route = useRoute<any>();
+    const navigation = useNavigation<any>();
+    const { pdfUri } = route.params ?? {};
+    if (!pdfUri) {
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>Hmm, empty here?</Text>
+            </View>
+        );
+    }
 
-const Pdf_Viewer = () => {
-
-    const [lastUri, setLastUri] = useState<string | null>(null);
-
-    const handleError = (err: unknown) => {
-        console.log('error', err);
-    };
     return (
-        <View style={{ flex: 1 }}>
-            <Button
-                title="open file"
-                onPress={async () => {
-                    try {
-                        const [result] = await pick({
-                            mode: 'open',
-                            type: ['application/pdf'],
-                        });
-                        const [localCopy] = await keepLocalCopy({
-                            files: [
-                                {
-                                    uri: result.uri,
-                                    fileName: result.name ?? 'fallbackName',
-                                },
-                            ],
-                            destination: 'documentDirectory',
-                        });
-                        if (localCopy.status === 'success') {
-                            setLastUri(localCopy.localUri); //
-                            console.log('Local file:', localCopy.localUri);
-                        } else {
-                            console.log('Error while cop:', localCopy.copyError);
-                        }
-
-                    } catch (err) {
-                        handleError(err);
-                    }
+        <View style={styles.container}>
+            <TouchableOpacity
+                style={styles.backBtn}
+                onPress={() => navigation.navigate('add')}
+            >
+                <Text style={styles.backText}>Back</Text>
+            </TouchableOpacity>
+            <Pdf
+                source={{ uri: pdfUri }}
+                onLoadComplete={(numberOfPages: number) => {
+                    console.log(`PDF loaded, total pages: ${numberOfPages}`);
                 }}
+                onPageChanged={(page: number, numberOfPages: number) => {
+                    console.log(`Page: ${page} / ${numberOfPages}`);
+                }}
+                onError={(error) => {
+                    console.log('Error loading PDF:', error);
+                }}
+                style={styles.pdf}
             />
-
-            {lastUri ? (
-                <Pdf
-                    source={{ uri: lastUri }}
-                    onLoadComplete={(numberOfPages, filePath) => {
-                        console.log(`Number of pages: ${numberOfPages}`);
-                    }}
-                    onPageChanged={(page, numberOfPages) => {
-                        console.log(`Current page: ${page}`);
-                    }}
-                    onError={(error) => {
-                        console.log(error);
-                    }}
-                    onPressLink={(uri) => {
-                        console.log(`Link pressed: ${uri}`);
-                    }}
-                    style={styles.pdf}
-                />
-            ) : (
-                <View style={{ marginTop: 16 }}>
-                    <Button
-                        title="No PDF selected"
-                        onPress={() => console.log('Choose pdf')}
-                    />
-                </View>
-            )}
         </View>
     );
-};
-
-export default Pdf_Viewer;
+}
 
 const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyText: {
+        fontSize: 16,
+        fontStyle: 'italic',
+    },
     pdf: {
-        flex:1,
-        width:Dimensions.get('window').width,
-        height:Dimensions.get('window').height,
-    }
+        flex: 1,
+        width: Dimensions.get('window').width,
+        height: Dimensions.get('window').height,
+    },
+    backBtn: {
+        position: 'absolute',
+        zIndex: 999,
+        top: 40,
+        right: 20,
+        width: 45,
+        height: 45,
+        borderRadius: 25,
+        backgroundColor: 'rgba(221,221,221,0.33)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    backText: {
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
 });
