@@ -33,7 +33,12 @@ export default function PdfCard({ pdf, onPress }: PdfCardProps) {
 const styles = StyleSheet.create({
     card: {
         marginVertical: 8,
-        padding: 12,
+        marginHorizontal: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 10,
+        width: 150,
+        height: 150,
         borderWidth: 1,
         borderColor: '#ccc',
         borderRadius: 8,

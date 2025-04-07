@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import {View, Button, FlatList, StyleSheet, Text, Modal, TextInput, Alert, TouchableOpacity} from 'react-native';
+import {View, FlatList, StyleSheet, Text, Modal, TextInput, Alert, TouchableOpacity} from 'react-native';
 import { pick, keepLocalCopy } from '@react-native-documents/picker';
 import PdfCard from '../components/PdfCard.tsx';
 
@@ -85,8 +85,12 @@ export default function MyCollection({ navigation }: any) {
 
     return (
         <View style={styles.container}>
-            <Button title="Add PDF" onPress={handleAddPdf} />
-
+            <TouchableOpacity
+                style={[styles.addBtn]}
+                onPress={() => handleAddPdf()}
+            >
+                <Text style={styles.btnText}>Add PDF</Text>
+            </TouchableOpacity>
             <FlatList
                 data={pdfs}
                 keyExtractor={(item) => item.id}
@@ -96,6 +100,7 @@ export default function MyCollection({ navigation }: any) {
                         onPress={() => handleOpenPdf(item)}
                     />
                 )}
+                numColumns={2}
             />
             <Modal
                 animationType="slide"
@@ -155,7 +160,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     modalContent: {
-        width: '80%',
+        width: '85%',
         backgroundColor: '#fff',
         borderRadius: 8,
         padding: 16,
@@ -178,16 +183,24 @@ const styles = StyleSheet.create({
         marginTop: 16,
     },
     modalButton: {
-        backgroundColor: '#007AFF',
+        backgroundColor: 'rgba(128,128,128,0.74)',
         borderRadius: 6,
         padding: 10,
         marginLeft: 8,
     },
     cancelButton: {
-        backgroundColor: '#f00',
+        backgroundColor: '#af7c7c',
+    },
+    addBtn:{
+        backgroundColor: 'rgba(92,183,241,0.74)',
+        borderRadius: 6,
+        padding: 10,
+        alignItems: 'center',
+        borderColor: '#ccc',
+        borderWidth: 1,
     },
     btnText: {
-        color: '#fff',
+        color: '#ffffff',
         fontSize: 15,
     },
 });

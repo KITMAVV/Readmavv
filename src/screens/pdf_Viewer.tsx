@@ -19,9 +19,9 @@ export default function Pdf_Viewer() {
         <View style={styles.container}>
             <TouchableOpacity
                 style={styles.backBtn}
-                onPress={() => navigation.navigate('add')}
+                onPress={() => navigation.goBack()}
             >
-                <Text style={styles.backText}>Back</Text>
+                <Text style={styles.backText}>↶</Text>
             </TouchableOpacity>
             <Pdf
                 source={{ uri: pdfUri }}
@@ -61,12 +61,12 @@ const styles = StyleSheet.create({
     backBtn: {
         position: 'absolute',
         zIndex: 999,
-        top: 40,
+        bottom: 20,
         right: 20,
         width: 45,
         height: 45,
         borderRadius: 25,
-        backgroundColor: 'rgba(221,221,221,0.33)',
+        backgroundColor: 'rgba(213,213,213,0.14)',
         justifyContent: 'center',
         alignItems: 'center',
     },
