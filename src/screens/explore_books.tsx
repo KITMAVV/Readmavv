@@ -2,6 +2,9 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
+
+import { GOOGLE_BOOKS_API_KEY } from '@env';
+
 export default function BooksExplorer() {
     return (
         <View style={styles.container}>
