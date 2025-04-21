@@ -25,9 +25,9 @@
 > _This list **may** be updated over time._
 
 ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘
-## 🚧 Project Status 🟢
+## 🚧 Project Status 🟡
 
-- Currently: Active development
+- Currently: Paused
 
 ⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘
 
